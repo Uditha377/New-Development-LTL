@@ -1002,7 +1002,7 @@
 <script>
 Chart.register(ChartDataLabels);
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzuNJajs_YL1Qx0Emv_wClWWB-uuOIdGvskHd4JCmsi_8zo546KAfPGdYYCngwghplS/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyzWrA2wpCyGGxj6FCvET1pqAdejFOgByOU-sgYl8BGFuOcNRZUnb1m_yuN1hg0qV68/exec";
 
 const PALETTE = {
   green:    ['#22c55e','#16a34a','#15803d','#166534','#14532d','#052e16'],
@@ -1257,7 +1257,7 @@ function renderMosaicFloor(rows) {
         </div>
         <div>
           <div class="type-stat-label">Orders</div>
-          <div class="type-stat-value">${r.orders||0}</div>
+          <div class="type-stat-value">${r.ordered||0}</div>
         </div>
         <div>
           <div class="type-stat-label">Rate</div>
@@ -1270,7 +1270,7 @@ function renderMosaicFloor(rows) {
   const labels = (rows||[]).map(r=>r.type);
   const received  = (rows||[]).map(r=>r.received);
   const completed = (rows||[]).map(r=>r.completed);
-  const orders    = (rows||[]).map(r=>r.orders||0);
+  const orders    = (rows||[]).map(r=>r.ordered||0);
 
   makeChart('mosaicDonut', {
     type: 'doughnut',
@@ -1313,39 +1313,42 @@ function renderMosaicFloor(rows) {
 
 /* ── ORDER PIE ── */
 function renderOrders(d) {
-  const total    = d.totalReceived  || 0;
-  const ordered  = d.totalOrders    || 0;
-  const completed= d.totalCompleted || 0;
-  const pending  = total - completed;
-  const noOrder  = total - ordered;
+  const total     = d.totalReceived  || 0;
+  const ordered   = d.totalOrders    || 0;
+  const completed = d.totalCompleted || 0;
+  const pending   = total - completed;
+  const notOrdered = Math.max(0, total - ordered);
 
   makeChart('orderPie', {
     type: 'doughnut',
     data: {
-      labels: ['Orders Received','Pending (No Order)','Completed'],
-      datasets: [{ data:[ordered, noOrder, completed],
-        backgroundColor:['#22c55e','#f59e0b','#3b82f6'],
-        borderWidth:0, hoverOffset:10 }]
+      labels: ['Orders Received', 'Not Yet Ordered', 'Completed'],
+      datasets: [{ data: [ordered, notOrdered, completed],
+        backgroundColor: ['#22c55e','#f59e0b','#3b82f6'],
+        borderWidth: 0, hoverOffset: 10 }]
     },
     options: {
-      responsive:true, maintainAspectRatio:false, cutout:'60%',
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
       plugins: {
-        legend:{labels:{color:'#86efac',font:{size:12}}},
-        datalabels:{ color:'#f0fdf4', font:{weight:'bold',size:12}, formatter: v => v > 0 ? v : '' }
+        legend: { labels: { color: '#86efac', font: { size: 12 } } },
+        datalabels: { color: '#f0fdf4', font: { weight: 'bold', size: 12 }, formatter: v => v > 0 ? v : '' }
       }
     }
   });
 
   const wrap = document.getElementById('orderKpiSummary');
   const items = [
-    { label:'Total Developments', value: total,     color:'#22c55e' },
-    { label:'Orders Received',    value: ordered,   color:'#3b82f6' },
-    { label:'Completed',          value: completed, color:'#4ade80' },
-    { label:'Pending',            value: pending,   color:'#f59e0b' }
+    { label: 'Total Received',  value: total,      color: '#22c55e' },
+    { label: 'Orders Received', value: ordered,    color: '#3b82f6' },
+    { label: 'Completed',       value: completed,  color: '#4ade80' },
+    { label: 'Pending',         value: pending,    color: '#f59e0b' },
+    { label: 'Not Yet Ordered', value: notOrdered, color: '#ef4444' },
+    { label: 'Completion Rate', value: total ? Math.round((completed/total)*100)+'%' : '0%', color: '#a78bfa' }
   ];
+  wrap.style.gridTemplateColumns = '1fr 1fr 1fr';
   wrap.innerHTML = items.map(i => `
-    <div class="pcount-card" style="border-color:${i.color}22;">
-      <div class="pcount-num" style="color:${i.color}">${i.value}</div>
+    <div class="pcount-card" style="border-color:${i.color}33;">
+      <div class="pcount-num" style="color:${i.color};font-size:24px;">${i.value}</div>
       <div class="pcount-label">${i.label}</div>
     </div>`).join('');
 }
@@ -1425,12 +1428,12 @@ function renderPendingRows(rows) {
       <td style="color:#6b7280;">${i+1}</td>
       <td style="font-weight:700;color:#4ade80;">${r.pbNo||''}</td>
       <td>${r.month||''}</td>
-      <td><span class="status-badge ${statusClass(r.status)}">${r.status||''}</span></td>
+      <td><span class="status-badge ${statusClass(r.status)}">${r.status||'Pending'}</span></td>
       <td>${r.buyer||''}</td>
-      <td>${r.shape||''}</td>
-      <td>${r.mosaicFloor||''}</td>
-      <td>${r.developer||''}</td>
-      <td>${r.orderReceived||''}</td>
+      <td>${r.shape||'—'}</td>
+      <td>${r.mosaicFloor||'—'}</td>
+      <td>${r.operator||r.developer||'—'}</td>
+      <td>${r.orderReceived||r.ordered||'—'}</td>
     </tr>`).join('');
 }
 
@@ -1442,8 +1445,9 @@ window.filterPendingTable = function() {
     (r.buyer||'').toLowerCase().includes(q) ||
     (r.status||'').toLowerCase().includes(q) ||
     (r.shape||'').toLowerCase().includes(q) ||
-    (r.developer||'').toLowerCase().includes(q) ||
-    (r.month||'').toLowerCase().includes(q)
+    (r.operator||r.developer||'').toLowerCase().includes(q) ||
+    (r.month||'').toLowerCase().includes(q) ||
+    (r.mosaicFloor||'').toLowerCase().includes(q)
   );
   renderPendingRows(filtered);
 };
