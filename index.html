@@ -1,472 +1,1489 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>R&D PB Development Dashboard 2026</title>
-
+<title>R&D Development Intelligence Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
-:root{
-    --primary:#0f5132;
-    --secondary:#198754;
-    --light:#e9f7ef;
-    --bg:#f4f7f6;
-    --white:#ffffff;
-    --text:#1f2937;
-    --shadow:0 8px 25px rgba(0,0,0,0.08);
-    --radius:18px;
-}
+  :root {
+    --bg: #060f0a;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.08);
+    --green-deep: #0a3d22;
+    --green-mid: #1a7a45;
+    --green-bright: #22c55e;
+    --green-glow: #4ade80;
+    --green-accent: #16a34a;
+    --gold: #f59e0b;
+    --gold-soft: #fbbf24;
+    --text-primary: #f0fdf4;
+    --text-secondary: #86efac;
+    --text-muted: #6b7280;
+    --text-dim: #374151;
+    --card-radius: 20px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.5);
+    --shadow-green: 0 0 40px rgba(34,197,94,0.08);
+    --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body{
-    font-family:'Inter',sans-serif;
-    background:var(--bg);
-    color:var(--text);
-}
+  html { scroll-behavior: smooth; }
 
-header{
-    background:linear-gradient(135deg,#0f5132,#145a32,#1d8348);
-    color:white;
-    padding:25px 20px;
-    box-shadow:var(--shadow);
-}
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-.header-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    flex-wrap:wrap;
-    gap:15px;
-}
+  /* Ambient background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(22,163,74,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(10,61,34,0.08) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
-header h1{
-    font-size:clamp(24px,4vw,44px);
-    font-weight:700;
-}
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    background: linear-gradient(135deg, rgba(10,61,34,0.95) 0%, rgba(22,163,74,0.15) 100%);
+    border-bottom: 1px solid rgba(34,197,94,0.2);
+    backdrop-filter: blur(20px);
+    padding: 0;
+    overflow: hidden;
+  }
 
-.subtitle{
-    margin-top:6px;
-    color:#d1f2eb;
-    font-size:15px;
-}
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--green-bright), transparent);
+  }
 
-.last-updated{
-    background:rgba(255,255,255,0.12);
-    padding:14px 18px;
-    border-radius:14px;
-    backdrop-filter:blur(8px);
-    font-size:14px;
-}
+  .header-inner {
+    max-width: 1600px;
+    margin: auto;
+    padding: 22px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
 
-.container{
-    max-width:1500px;
-    margin:auto;
-    padding:20px;
-}
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
 
-.kpi-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-    gap:20px;
-    margin-top:20px;
-}
+  .header-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--green-mid), var(--green-bright));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 20px rgba(34,197,94,0.4);
+    flex-shrink: 0;
+  }
 
-.kpi-card{
-    background:var(--white);
-    border-radius:var(--radius);
-    padding:25px;
-    box-shadow:var(--shadow);
-    position:relative;
-    overflow:hidden;
-    transition:0.3s;
-}
+  .header-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text-primary);
+    line-height: 1.2;
+  }
 
-.kpi-card:hover{
-    transform:translateY(-4px);
-}
+  .header-text p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
 
-.kpi-card::before{
-    content:'';
-    position:absolute;
-    top:0;
-    left:0;
-    width:6px;
-    height:100%;
-    background:var(--secondary);
-}
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
 
-.kpi-title{
-    font-size:13px;
-    letter-spacing:1px;
-    font-weight:700;
-    color:#6b7280;
-    margin-bottom:15px;
-}
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.3);
+    border-radius: 30px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--green-bright);
+    letter-spacing: 0.5px;
+  }
 
-.kpi-value{
-    font-size:52px;
-    font-weight:700;
-    color:var(--primary);
-}
+  .live-dot {
+    width: 8px; height: 8px;
+    background: var(--green-bright);
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+    box-shadow: 0 0 8px var(--green-bright);
+  }
 
-.section-grid{
-    display:grid;
-    grid-template-columns:1.2fr 1fr;
-    gap:20px;
-    margin-top:25px;
-}
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
 
-.card{
-    background:white;
-    border-radius:var(--radius);
-    padding:24px;
-    box-shadow:var(--shadow);
-}
+  .last-updated {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
 
-.section-title{
-    font-size:28px;
-    color:var(--primary);
-    margin-bottom:20px;
-    font-weight:700;
-}
+  /* ── LOADING ── */
+  #loadingOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    transition: opacity 0.6s;
+  }
 
-.table-container{
-    overflow-x:auto;
-}
+  #loadingOverlay.hidden { opacity: 0; pointer-events: none; }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
+  .loader-icon { font-size: 48px; animation: spin 2s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-th{
-    background:var(--primary);
-    color:white;
-    padding:15px;
-    text-align:left;
-    font-size:14px;
-}
+  .loader-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
 
-td{
-    padding:15px;
-    border-bottom:1px solid #e5e7eb;
-    font-size:15px;
-}
+  .loader-bar {
+    width: 200px; height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+  }
 
-.total-row{
-    background:var(--light);
-    font-weight:700;
-}
+  .loader-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright));
+    border-radius: 3px;
+    animation: load-progress 2s ease-in-out infinite;
+  }
 
-.status-badge{
-    padding:8px 14px;
-    border-radius:30px;
-    color:white;
-    font-size:13px;
-    font-weight:600;
-    display:inline-block;
-}
+  @keyframes load-progress {
+    0% { width: 0%; }
+    60% { width: 80%; }
+    100% { width: 100%; }
+  }
 
-.testing{background:#fd7e14;}
-.pending{background:#dc3545;}
-.sampling{background:#0d6efd;}
-.trial{background:#6f42c1;}
-.waiting{background:#20c997;}
+  /* ── ERROR ── */
+  #errorBanner {
+    display: none;
+    background: rgba(239,68,68,0.15);
+    border: 1px solid rgba(239,68,68,0.4);
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin: 20px 32px;
+    color: #fca5a5;
+    font-size: 14px;
+    font-weight: 500;
+  }
 
-.empty-message{
-    background:#e8f5e9;
-    color:#0f5132;
-    padding:18px;
-    border-radius:12px;
-    font-weight:600;
-    margin-top:15px;
-}
+  /* ── MAIN CONTAINER ── */
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1600px;
+    margin: auto;
+    padding: 28px 24px;
+  }
 
-canvas{
-    width:100% !important;
-    height:420px !important;
-}
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+    margin-top: 36px;
+  }
 
-@media(max-width:992px){
-    .section-grid{
-        grid-template-columns:1fr;
-    }
-}
+  .section-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--green-deep), var(--green-mid));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 4px 16px rgba(34,197,94,0.2);
+    flex-shrink: 0;
+  }
 
-@media(max-width:768px){
+  .section-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
 
-    .container{
-        padding:14px;
-    }
+  .section-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-top: 2px;
+  }
 
-    .kpi-grid{
-        grid-template-columns:1fr;
-    }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(34,197,94,0.3), transparent);
+  }
 
-    .kpi-card{
-        padding:22px;
-    }
+  /* ── KPI GRID ── */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 16px;
+    margin-top: 8px;
+  }
 
-    .kpi-value{
-        font-size:42px;
-    }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+    cursor: default;
+    backdrop-filter: blur(10px);
+  }
 
-    .section-title{
-        font-size:22px;
-    }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--green-mid), var(--green-bright));
+    opacity: 0;
+    transition: var(--transition);
+  }
 
-    th,td{
-        padding:12px;
-        font-size:13px;
-    }
+  .kpi-card:hover {
+    background: var(--surface-hover);
+    border-color: rgba(34,197,94,0.25);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow), var(--shadow-green);
+  }
 
-    canvas{
-        height:300px !important;
-    }
-}
+  .kpi-card:hover::before { opacity: 1; }
+
+  .kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .kpi-icon-wrap {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .kpi-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .badge-green { background: rgba(34,197,94,0.15); color: var(--green-bright); }
+  .badge-gold  { background: rgba(245,158,11,0.15); color: var(--gold-soft); }
+  .badge-blue  { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+
+  .kpi-value {
+    font-size: 42px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -2px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 6px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--card-radius);
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    transition: var(--transition);
+  }
+
+  .card:hover {
+    border-color: rgba(34,197,94,0.15);
+  }
+
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title-dot {
+    width: 8px; height: 8px;
+    background: var(--green-bright);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--green-bright);
+  }
+
+  /* ── GRID LAYOUTS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 20px; margin-top: 20px; }
+  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; margin-top: 20px; }
+  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px; }
+
+  /* ── CHART WRAP ── */
+  .chart-wrap { position: relative; }
+  .chart-wrap-md { height: 320px; }
+  .chart-wrap-lg { height: 380px; }
+  .chart-wrap-sm { height: 260px; }
+  .chart-wrap-xl { height: 440px; }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  thead th {
+    background: rgba(10,61,34,0.8);
+    color: var(--text-secondary);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    white-space: nowrap;
+    position: sticky; top: 0; z-index: 2;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background var(--transition);
+  }
+
+  tbody tr:hover { background: rgba(255,255,255,0.04); }
+
+  tbody td {
+    padding: 12px 16px;
+    color: var(--text-primary);
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { display: flex; align-items: center; gap: 10px; }
+
+  .progress-bar {
+    flex: 1;
+    min-width: 80px;
+    height: 8px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-accent), var(--green-bright));
+    border-radius: 20px;
+    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .progress-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--green-bright);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  /* ── STATUS BADGES ── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .status-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .status-pending     { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .status-inprogress  { background: rgba(99,102,241,0.15); color: #a5b4fc; }
+  .status-approved    { background: rgba(34,197,94,0.15);  color: #4ade80; }
+  .status-completed   { background: rgba(34,197,94,0.2);   color: #86efac; }
+  .status-default     { background: rgba(107,114,128,0.15); color: #9ca3af; }
+
+  /* ── SEARCH ── */
+  .search-bar {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 18px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: var(--transition);
+    margin-bottom: 16px;
+  }
+
+  .search-bar::placeholder { color: var(--text-muted); }
+
+  .search-bar:focus {
+    border-color: rgba(34,197,94,0.4);
+    background: rgba(255,255,255,0.07);
+    box-shadow: 0 0 0 3px rgba(34,197,94,0.08);
+  }
+
+  /* ── LEADERBOARD ── */
+  .leaderboard-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: var(--transition);
+  }
+
+  .leaderboard-item:last-child { border-bottom: none; }
+  .leaderboard-item:hover { padding-left: 6px; }
+
+  .lb-rank {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--green-bright);
+    flex-shrink: 0;
+  }
+
+  .lb-rank.gold   { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); color: var(--gold-soft); }
+  .lb-rank.silver { background: rgba(148,163,184,0.15); border-color: rgba(148,163,184,0.3); color: #cbd5e1; }
+  .lb-rank.bronze { background: rgba(180,83,9,0.15); border-color: rgba(180,83,9,0.3); color: #fb923c; }
+
+  .lb-name {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lb-bar-wrap { width: 100px; }
+  .lb-value {
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--green-bright);
+    min-width: 30px;
+    text-align: right;
+  }
+
+  /* ── MOSAIC/FLOOR CARDS ── */
+  .type-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    text-align: center;
+    transition: var(--transition);
+  }
+
+  .type-card:hover {
+    border-color: rgba(34,197,94,0.25);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-green);
+  }
+
+  .type-icon { font-size: 32px; margin-bottom: 10px; }
+
+  .type-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .type-big {
+    font-size: 36px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -1.5px;
+    line-height: 1;
+  }
+
+  .type-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .type-meta {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .type-stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+
+  .type-stat-value {
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--green-bright);
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    color: var(--text-muted);
+    gap: 12px;
+  }
+
+  .empty-state .icon { font-size: 40px; }
+  .empty-state p { font-size: 14px; }
+
+  /* ── PENDING COUNT ── */
+  .pending-count-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .pcount-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .pcount-num {
+    font-size: 28px;
+    font-weight: 900;
+    color: var(--text-primary);
+  }
+
+  .pcount-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 40px 0 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-size: 12px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media(max-width:1400px) {
+    .kpi-grid { grid-template-columns: repeat(3,1fr); }
+  }
+
+  @media(max-width:1100px) {
+    .grid-2, .grid-1-2, .grid-2-1 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media(max-width:768px) {
+    .kpi-grid { grid-template-columns: repeat(2,1fr); }
+    .grid-3, .grid-4 { grid-template-columns: 1fr; }
+    .header-inner { padding: 16px; }
+    .container { padding: 16px; }
+    .kpi-value { font-size: 32px; }
+    .section-title { font-size: 17px; }
+    .chart-wrap-lg { height: 280px; }
+    .chart-wrap-xl { height: 340px; }
+  }
+
+  @media(max-width:480px) {
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .kpi-value { font-size: 28px; }
+    .header-text h1 { font-size: 17px; }
+    .chart-wrap-md { height: 260px; }
+  }
 </style>
 </head>
-
 <body>
 
-<header>
-    <div class="header-top">
-        <div>
-            <h1>R&D New Development Pipeline Analysis</h1>
-            <div class="subtitle">Management Intelligence Dashboard · Live Sync</div>
-        </div>
-
-        <div class="last-updated">
-            <strong>Last Updated</strong><br>
-            <span id="lastUpdated"></span>
-        </div>
-    </div>
-</header>
-
-<div class="container">
-
-    <div class="kpi-grid">
-        <div class="kpi-card">
-            <div class="kpi-title">TOTAL DEVELOPMENTS RECEIVED</div>
-            <div class="kpi-value" id="totalReceived">0</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-title">TOTAL COMPLETED NUMBER</div>
-            <div class="kpi-value" id="totalCompleted">0</div>
-        </div>
-
-        <div class="kpi-card">
-            <div class="kpi-title">OVERALL COMPLETION %</div>
-            <div class="kpi-value" id="overallRate">0%</div>
-        </div>
-    </div>
-
-    <div class="section-grid">
-
-        <div class="card">
-            <div class="section-title">Monthly PB Development 2026</div>
-            <canvas id="monthlyChart"></canvas>
-        </div>
-
-        <div class="card">
-            <div class="section-title">Monthly PB Development 2026</div>
-
-            <div class="table-container">
-                <table id="dataTable">
-                    <thead>
-                        <tr>
-                            <th>Month</th>
-                            <th>Total Received</th>
-                            <th>Completed</th>
-                            <th>Completion %</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody"></tbody>
-                </table>
-            </div>
-        </div>
-
-    </div>
-
-    <div class="card" style="margin-top:25px;">
-        <div class="section-title">Current Pending Development Status</div>
-
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>PB No</th>
-                        <th>Development</th>
-                        <th>Current Status</th>
-                    </tr>
-                </thead>
-
-                <tbody id="pendingTableBody">
-                </tbody>
-            </table>
-        </div>
-
-        <div id="allCompletedMessage" class="empty-message" style="display:none;">
-            All PB developments are completed successfully.
-        </div>
-
-    </div>
-
+<!-- Loading Overlay -->
+<div id="loadingOverlay">
+  <div class="loader-icon">🔬</div>
+  <div class="loader-text">Loading Dashboard</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
 </div>
 
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <div class="header-brand">
+      <div class="header-icon">📊</div>
+      <div class="header-text">
+        <h1>R&D Development Pipeline Intelligence</h1>
+        <p>Executive Management Dashboard · 2026</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        Live Sync
+      </div>
+      <div class="last-updated" id="lastUpdated">Fetching data…</div>
+    </div>
+  </div>
+</header>
+
+<div id="errorBanner"></div>
+
+<div class="container" id="mainContent" style="opacity:0;transition:opacity 0.6s;">
+
+  <!-- ══ KPI SECTION ══ -->
+  <div class="section-header" style="margin-top:0;">
+    <div class="section-icon">⚡</div>
+    <div>
+      <div class="section-title">Key Performance Indicators</div>
+      <div class="section-sub">Real-time development metrics</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon-wrap" style="background:rgba(34,197,94,0.12);">📥</div>
+        <div class="kpi-badge badge-green">TOTAL</div>
+      </div>
+      <div class="kpi-value" id="kpiReceived">0</div>
+      <div class="kpi-label">Developments Received</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon-wrap" style="background:rgba(34,197,94,0.12);">✅</div>
+        <div class="kpi-badge badge-green">DONE</div>
+      </div>
+      <div class="kpi-value" id="kpiCompleted">0</div>
+      <div class="kpi-label">Completed Developments</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon-wrap" style="background:rgba(245,158,11,0.12);">📈</div>
+        <div class="kpi-badge badge-gold">RATE</div>
+      </div>
+      <div class="kpi-value" id="kpiRate">0%</div>
+      <div class="kpi-label">Overall Completion %</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon-wrap" style="background:rgba(99,102,241,0.12);">📦</div>
+        <div class="kpi-badge badge-blue">ORDERS</div>
+      </div>
+      <div class="kpi-value" id="kpiOrders">0</div>
+      <div class="kpi-label">Total Orders Received</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon-wrap" style="background:rgba(34,197,94,0.12);">🔷</div>
+        <div class="kpi-badge badge-green">MOSAIC</div>
+      </div>
+      <div class="kpi-value" id="kpiMosaic">0</div>
+      <div class="kpi-label">Mosaic Developments</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon-wrap" style="background:rgba(34,197,94,0.12);">🔲</div>
+        <div class="kpi-badge badge-green">FLOOR</div>
+      </div>
+      <div class="kpi-value" id="kpiFloor">0</div>
+      <div class="kpi-label">Floor Developments</div>
+    </div>
+  </div>
+
+  <!-- ══ MONTHLY SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">📅</div>
+    <div>
+      <div class="section-title">Monthly Development Analysis</div>
+      <div class="section-sub">Month-wise received vs completed breakdown</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Monthly Development Chart</div>
+      <div class="chart-wrap chart-wrap-lg"><canvas id="monthlyChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Monthly Completion Table</div>
+      <div class="table-wrap" style="max-height:360px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Received</th>
+              <th>Completed</th>
+              <th>Completion %</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BUYER SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">🏢</div>
+    <div>
+      <div class="section-title">Buyer Analysis</div>
+      <div class="section-sub">Development performance by buyer</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2-1">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Buyer-wise Received vs Completed</div>
+      <div class="chart-wrap chart-wrap-xl"><canvas id="buyerChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Buyer Ranking</div>
+      <div id="buyerLeaderboard"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <div class="card-title"><div class="card-title-dot"></div>Buyer Completion Rate</div>
+    <div class="chart-wrap chart-wrap-md"><canvas id="buyerRateChart"></canvas></div>
+  </div>
+
+  <!-- ══ SHAPE SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">🔷</div>
+    <div>
+      <div class="section-title">Shape / Size Analysis</div>
+      <div class="section-sub">Development performance by shape category</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Shape-wise Received vs Completed</div>
+      <div class="chart-wrap chart-wrap-lg"><canvas id="shapeChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Shape Completion Rate</div>
+      <div class="chart-wrap chart-wrap-lg"><canvas id="shapeRateChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══ MOSAIC VS FLOOR SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">🔲</div>
+    <div>
+      <div class="section-title">Mosaic vs Floor Analysis</div>
+      <div class="section-sub">Comparative development type performance</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2" id="mosaicFloorCards"></div>
+
+  <div class="grid-2" style="margin-top:20px;">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Development Type Distribution</div>
+      <div class="chart-wrap chart-wrap-md"><canvas id="mosaicDonut"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Received · Completed · Orders</div>
+      <div class="chart-wrap chart-wrap-md"><canvas id="mosaicBar"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══ ORDER RECEIVING SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">📦</div>
+    <div>
+      <div class="section-title">Order Receiving Analysis</div>
+      <div class="section-sub">Order vs pending vs completed breakdown</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Order Status Distribution</div>
+      <div class="chart-wrap chart-wrap-md"><canvas id="orderPie"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Order KPI Summary</div>
+      <div id="orderKpiSummary" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ══ OPERATOR SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">👤</div>
+    <div>
+      <div class="section-title">Operator Performance</div>
+      <div class="section-sub">Development completion by operator</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="grid-1-2">
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Top Performers</div>
+      <div id="operatorLeaderboard"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><div class="card-title-dot"></div>Operator Ranking Chart</div>
+      <div class="chart-wrap chart-wrap-xl"><canvas id="operatorChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- ══ PENDING SECTION ══ -->
+  <div class="divider"></div>
+  <div class="section-header">
+    <div class="section-icon">⏳</div>
+    <div>
+      <div class="section-title">Pending Developments</div>
+      <div class="section-sub">All non-completed developments requiring attention</div>
+    </div>
+    <div class="section-line"></div>
+  </div>
+
+  <div id="pendingCountRow" class="pending-count-row"></div>
+
+  <div class="card">
+    <div class="card-title"><div class="card-title-dot"></div>Pending Development Register</div>
+    <input type="text" class="search-bar" id="pendingSearch" placeholder="🔍  Search by PB#, Buyer, Status, Shape…" oninput="filterPendingTable()">
+    <div class="table-wrap" style="max-height:500px;">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>PB#</th>
+            <th>Month</th>
+            <th>Status</th>
+            <th>Buyer</th>
+            <th>Shape</th>
+            <th>Type</th>
+            <th>Developer</th>
+            <th>Order Rcvd</th>
+          </tr>
+        </thead>
+        <tbody id="pendingTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>R&D Development Intelligence Dashboard · 2026 · Powered by Google Sheets</footer>
+
 <script>
+Chart.register(ChartDataLabels);
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzuNJajs_YL1Qx0Emv_wClWWB-uuOIdGvskHd4JCmsi_8zo546KAfPGdYYCngwghplS/exec";
+const API_URL = "/https://script.google.com/macros/s/AKfycbxmuP3YCAYvsK5fpftTiM5SXeZEZCaOpGJBvkte55mZq5kKiOsBmw2ZX4IguPQ_mcGz/exec";
 
-async function loadDashboard(){
+const PALETTE = {
+  green:    ['#22c55e','#16a34a','#15803d','#166534','#14532d','#052e16'],
+  greenSoft:['#4ade80','#86efac','#a7f3d0','#bbf7d0','#dcfce7','#f0fdf4'],
+  mixed:    ['#22c55e','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#ec4899','#84cc16'],
+  donut:    ['#22c55e','#3b82f6','#f59e0b','#8b5cf6']
+};
 
-    try{
+let allPendingRows = [];
+let chartInstances = {};
 
-        const response = await fetch(API_URL);
-        const data = await response.json();
-
-        document.getElementById("totalReceived").innerText = data.totalReceived;
-        document.getElementById("totalCompleted").innerText = data.totalCompleted;
-
-        const cleanRate = parseInt(data.overallCompletionRate);
-        document.getElementById("overallRate").innerText = cleanRate + "%";
-
-        document.getElementById("lastUpdated").innerText =
-            new Date().toLocaleString();
-
-        const tableBody = document.getElementById("tableBody");
-        tableBody.innerHTML = "";
-
-        const chartMonths = [];
-        const chartReceived = [];
-        const chartCompleted = [];
-
-        data.monthlyBreakdown.forEach(row=>{
-
-            if(row.received > 0){
-
-                const tr = document.createElement("tr");
-
-                tr.innerHTML = `
-                    <td><strong>${row.month}</strong></td>
-                    <td>${row.received}</td>
-                    <td>${row.completed}</td>
-                    <td><strong>${parseInt(row.rate)}%</strong></td>
-                `;
-
-                tableBody.appendChild(tr);
-
-                chartMonths.push(row.month);
-                chartReceived.push(row.received);
-                chartCompleted.push(row.completed);
-            }
-        });
-
-        const totalRow = document.createElement("tr");
-        totalRow.className = "total-row";
-
-        totalRow.innerHTML = `
-            <td>TOTAL</td>
-            <td>${data.totalReceived}</td>
-            <td>${data.totalCompleted}</td>
-            <td>${cleanRate}%</td>
-        `;
-
-        tableBody.appendChild(totalRow);
-
-        new Chart(document.getElementById("monthlyChart"),{
-            type:'bar',
-            data:{
-                labels:chartMonths,
-                datasets:[
-                    {
-                        label:'Total Received',
-                        data:chartReceived,
-                        backgroundColor:'#198754',
-                        borderRadius:10
-                    },
-                    {
-                        label:'Completed',
-                        data:chartCompleted,
-                        backgroundColor:'#7DCEA0',
-                        borderRadius:10
-                    }
-                ]
-            },
-            options:{
-                responsive:true,
-                maintainAspectRatio:false,
-                plugins:{
-                    legend:{
-                        position:'top'
-                    }
-                }
-            }
-        });
-
-        // Pending status section
-        const pendingBody = document.getElementById("pendingTableBody");
-
-        if(data.pendingDevelopments && data.pendingDevelopments.length > 0){
-
-            data.pendingDevelopments.forEach(item=>{
-
-                const statusClass = getStatusClass(item.status);
-
-                const tr = document.createElement("tr");
-
-                tr.innerHTML = `
-                    <td>${item.pb}</td>
-                    <td>${item.development}</td>
-                    <td>
-                        <span class="status-badge ${statusClass}">
-                            ${item.status}
-                        </span>
-                    </td>
-                `;
-
-                pendingBody.appendChild(tr);
-
-            });
-
-        }else{
-
-            document.getElementById("allCompletedMessage").style.display="block";
-        }
-
-    }catch(error){
-
-        console.error(error);
-        alert("Dashboard loading error.");
-    }
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
 }
 
-function getStatusClass(status){
+function makeChart(id, config) {
+  destroyChart(id);
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  chartInstances[id] = new Chart(ctx, config);
+}
 
-    const s = status.toLowerCase();
+/* ── COUNTER ANIMATION ── */
+function animateCounter(el, target, suffix='', duration=1400) {
+  let start = 0;
+  const step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.round(start) + suffix;
+    if (start >= target) clearInterval(timer);
+  }, 16);
+}
 
-    if(s.includes("testing")) return "testing";
-    if(s.includes("pending")) return "pending";
-    if(s.includes("sampling")) return "sampling";
-    if(s.includes("trial")) return "trial";
-    return "waiting";
+/* ── STATUS STYLE ── */
+function statusClass(s='') {
+  const l = s.toLowerCase();
+  if (l.includes('complet')) return 'status-completed';
+  if (l.includes('progress') || l.includes('ongoing') || l.includes('wip')) return 'status-inprogress';
+  if (l.includes('approv')) return 'status-approved';
+  if (l.includes('pending') || l.includes('hold') || l.includes('wait')) return 'status-pending';
+  return 'status-default';
+}
+
+/* ── KPI CARDS ── */
+function renderKPIs(d) {
+  const r = d.totalReceived   || 0;
+  const c = d.totalCompleted  || 0;
+  const rate = r ? Math.round((c/r)*100) : 0;
+  const orders = d.totalOrders || 0;
+  const mosaic = (d.mosaicFloor || []).find(x => /mosaic/i.test(x.type))?.received || 0;
+  const floor  = (d.mosaicFloor || []).find(x => /floor/i.test(x.type))?.received  || 0;
+
+  animateCounter(document.getElementById('kpiReceived'),  r);
+  animateCounter(document.getElementById('kpiCompleted'), c);
+  animateCounter(document.getElementById('kpiRate'),      rate, '%');
+  animateCounter(document.getElementById('kpiOrders'),    orders);
+  animateCounter(document.getElementById('kpiMosaic'),    mosaic);
+  animateCounter(document.getElementById('kpiFloor'),     floor);
+}
+
+/* ── MONTHLY TABLE ── */
+function renderMonthlyTable(rows) {
+  const body = document.getElementById('monthlyTableBody');
+  body.innerHTML = '';
+  (rows||[]).filter(r => r.received > 0).forEach(r => {
+    const rate = r.received ? Math.round((r.completed/r.received)*100) : 0;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${r.month}</strong></td>
+      <td>${r.received}</td>
+      <td>${r.completed}</td>
+      <td>
+        <div class="progress-wrap">
+          <div class="progress-bar"><div class="progress-fill" style="width:${rate}%"></div></div>
+          <div class="progress-label">${rate}%</div>
+        </div>
+      </td>`;
+    body.appendChild(tr);
+  });
+}
+
+/* ── MONTHLY CHART ── */
+function renderMonthlyChart(rows) {
+  const filtered = (rows||[]).filter(r => r.received > 0);
+  makeChart('monthlyChart', {
+    type: 'bar',
+    data: {
+      labels: filtered.map(r => r.month),
+      datasets: [
+        { label:'Received', data: filtered.map(r=>r.received),  backgroundColor:'#22c55e', borderRadius:8, borderSkipped:false },
+        { label:'Completed', data: filtered.map(r=>r.completed), backgroundColor:'rgba(34,197,94,0.35)', borderRadius:8, borderSkipped:false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels:{ color:'#86efac', font:{size:12} } },
+        datalabels: { color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'top', formatter: v => v > 0 ? v : '' }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'} },
+        y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'}, beginAtZero:true }
+      }
+    }
+  });
+}
+
+/* ── BUYER CHART ── */
+function renderBuyerChart(rows) {
+  const sorted = [...(rows||[])].sort((a,b) => b.received - a.received);
+  makeChart('buyerChart', {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r => r.buyer),
+      datasets: [
+        { label:'Received',  data: sorted.map(r=>r.received),  backgroundColor:'#22c55e', borderRadius:6, borderSkipped:false },
+        { label:'Completed', data: sorted.map(r=>r.completed), backgroundColor:'rgba(34,197,94,0.35)', borderRadius:6, borderSkipped:false }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels:{color:'#86efac',font:{size:12}} },
+        datalabels: { color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'right', formatter: v => v > 0 ? v : '' }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'}, beginAtZero:true },
+        y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#86efac',font:{size:11}} }
+      }
+    }
+  });
+}
+
+function renderBuyerRate(rows) {
+  const sorted = [...(rows||[])].sort((a,b) => b.received - a.received);
+  const rates = sorted.map(r => r.received ? Math.round((r.completed/r.received)*100) : 0);
+  makeChart('buyerRateChart', {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r => r.buyer),
+      datasets: [{ label:'Completion %', data: rates,
+        backgroundColor: rates.map(v => v>=80?'#22c55e':v>=50?'#f59e0b':'#ef4444'),
+        borderRadius: 8, borderSkipped:false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display:false },
+        datalabels: { color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'top', formatter: v => v + '%' }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'} },
+        y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280',callback:v=>v+'%'}, beginAtZero:true, max:100 }
+      }
+    }
+  });
+}
+
+function renderBuyerLeaderboard(rows) {
+  const sorted = [...(rows||[])].sort((a,b) => b.received - a.received).slice(0,8);
+  const max = sorted[0]?.received || 1;
+  const wrap = document.getElementById('buyerLeaderboard');
+  const rankClass = i => i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  wrap.innerHTML = sorted.map((r,i) => {
+    const pct = Math.round((r.received/max)*100);
+    const rate = r.received ? Math.round((r.completed/r.received)*100) : 0;
+    return `<div class="leaderboard-item">
+      <div class="lb-rank ${rankClass(i)}">${i+1}</div>
+      <div class="lb-name">${r.buyer}</div>
+      <div class="lb-bar-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="lb-value">${r.received}</div>
+      <div style="font-size:11px;color:${rate>=80?'#22c55e':rate>=50?'#fbbf24':'#f87171'};font-weight:700;min-width:36px;text-align:right;">${rate}%</div>
+    </div>`;
+  }).join('');
+}
+
+/* ── SHAPE CHART ── */
+function renderShapeChart(rows) {
+  const sorted = [...(rows||[])].sort((a,b) => b.received - a.received);
+  makeChart('shapeChart', {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r => r.shape),
+      datasets: [
+        { label:'Received',  data: sorted.map(r=>r.received),  backgroundColor:'#22c55e', borderRadius:7 },
+        { label:'Completed', data: sorted.map(r=>r.completed), backgroundColor:'rgba(34,197,94,0.35)', borderRadius:7 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels:{color:'#86efac',font:{size:12}} },
+        datalabels: { color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'top', formatter: v => v > 0 ? v : '' }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'} },
+        y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'}, beginAtZero:true }
+      }
+    }
+  });
+}
+
+function renderShapeRate(rows) {
+  const sorted = [...(rows||[])].sort((a,b) => b.received - a.received);
+  const rates = sorted.map(r => r.received ? Math.round((r.completed/r.received)*100) : 0);
+  makeChart('shapeRateChart', {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r => r.shape),
+      datasets: [{ label:'Completion %', data: rates,
+        backgroundColor: rates.map((v,i) => PALETTE.mixed[i % PALETTE.mixed.length] + 'cc'),
+        borderRadius:8 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend:{display:false},
+        datalabels:{ color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'top', formatter: v => v+'%' }
+      },
+      scales: {
+        x: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280'} },
+        y: { grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#6b7280',callback:v=>v+'%'}, beginAtZero:true, max:100 }
+      }
+    }
+  });
+}
+
+/* ── MOSAIC / FLOOR ── */
+function renderMosaicFloor(rows) {
+  const wrap = document.getElementById('mosaicFloorCards');
+  wrap.innerHTML = (rows||[]).map(r => {
+    const rate = r.received ? Math.round((r.completed/r.received)*100) : 0;
+    const icon = /mosaic/i.test(r.type) ? '🔷' : '🔲';
+    return `<div class="type-card">
+      <div class="type-icon">${icon}</div>
+      <div class="type-name">${r.type}</div>
+      <div class="type-big">${r.received}</div>
+      <div class="type-sub">Total Received</div>
+      <div style="margin-top:14px;">
+        <div class="progress-wrap">
+          <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${rate}%"></div></div>
+          <div class="progress-label">${rate}%</div>
+        </div>
+      </div>
+      <div class="type-meta">
+        <div>
+          <div class="type-stat-label">Completed</div>
+          <div class="type-stat-value">${r.completed}</div>
+        </div>
+        <div>
+          <div class="type-stat-label">Orders</div>
+          <div class="type-stat-value">${r.orders||0}</div>
+        </div>
+        <div>
+          <div class="type-stat-label">Rate</div>
+          <div class="type-stat-value">${rate}%</div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const labels = (rows||[]).map(r=>r.type);
+  const received  = (rows||[]).map(r=>r.received);
+  const completed = (rows||[]).map(r=>r.completed);
+  const orders    = (rows||[]).map(r=>r.orders||0);
+
+  makeChart('mosaicDonut', {
+    type: 'doughnut',
+    data: {
+      labels,
+      datasets: [{ data: received, backgroundColor: ['#22c55e','#3b82f6'], borderWidth:0, hoverOffset:10 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout:'65%',
+      plugins: {
+        legend: { labels:{color:'#86efac',font:{size:12}} },
+        datalabels: { color:'#f0fdf4', font:{weight:'bold',size:13}, formatter: v => v }
+      }
+    }
+  });
+
+  makeChart('mosaicBar', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label:'Received',  data: received,  backgroundColor:'rgba(34,197,94,0.7)',  borderRadius:8 },
+        { label:'Completed', data: completed, backgroundColor:'rgba(59,130,246,0.7)', borderRadius:8 },
+        { label:'Orders',    data: orders,    backgroundColor:'rgba(245,158,11,0.7)', borderRadius:8 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend:{labels:{color:'#86efac',font:{size:12}}},
+        datalabels:{ color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'top', formatter: v => v > 0 ? v : '' }
+      },
+      scales: {
+        x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'}},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},beginAtZero:true}
+      }
+    }
+  });
+}
+
+/* ── ORDER PIE ── */
+function renderOrders(d) {
+  const total    = d.totalReceived  || 0;
+  const ordered  = d.totalOrders    || 0;
+  const completed= d.totalCompleted || 0;
+  const pending  = total - completed;
+  const noOrder  = total - ordered;
+
+  makeChart('orderPie', {
+    type: 'doughnut',
+    data: {
+      labels: ['Orders Received','Pending (No Order)','Completed'],
+      datasets: [{ data:[ordered, noOrder, completed],
+        backgroundColor:['#22c55e','#f59e0b','#3b82f6'],
+        borderWidth:0, hoverOffset:10 }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins: {
+        legend:{labels:{color:'#86efac',font:{size:12}}},
+        datalabels:{ color:'#f0fdf4', font:{weight:'bold',size:12}, formatter: v => v > 0 ? v : '' }
+      }
+    }
+  });
+
+  const wrap = document.getElementById('orderKpiSummary');
+  const items = [
+    { label:'Total Developments', value: total,     color:'#22c55e' },
+    { label:'Orders Received',    value: ordered,   color:'#3b82f6' },
+    { label:'Completed',          value: completed, color:'#4ade80' },
+    { label:'Pending',            value: pending,   color:'#f59e0b' }
+  ];
+  wrap.innerHTML = items.map(i => `
+    <div class="pcount-card" style="border-color:${i.color}22;">
+      <div class="pcount-num" style="color:${i.color}">${i.value}</div>
+      <div class="pcount-label">${i.label}</div>
+    </div>`).join('');
+}
+
+/* ── OPERATOR ── */
+function renderOperator(rows) {
+  const sorted = [...(rows||[])].sort((a,b)=>b.count-a.count);
+  const max = sorted[0]?.count || 1;
+
+  const wrap = document.getElementById('operatorLeaderboard');
+  const rankClass = i => i===0?'gold':i===1?'silver':i===2?'bronze':'';
+  wrap.innerHTML = sorted.slice(0,8).map((r,i) => {
+    const pct = Math.round((r.count/max)*100);
+    return `<div class="leaderboard-item">
+      <div class="lb-rank ${rankClass(i)}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+      <div class="lb-name">${r.operator}</div>
+      <div class="lb-bar-wrap">
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="lb-value">${r.count}</div>
+    </div>`;
+  }).join('');
+
+  makeChart('operatorChart', {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r=>r.operator),
+      datasets: [{
+        label:'Developments Done',
+        data: sorted.map(r=>r.count),
+        backgroundColor: sorted.map((_,i) => PALETTE.mixed[i % PALETTE.mixed.length] + 'cc'),
+        borderRadius: 7
+      }]
+    },
+    options: {
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{display:false},
+        datalabels:{ color:'#f0fdf4', font:{weight:'bold',size:11}, anchor:'end', align:'right', formatter: v => v > 0 ? v : '' }
+      },
+      scales: {
+        x:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#6b7280'},beginAtZero:true},
+        y:{grid:{color:'rgba(255,255,255,0.05)'},ticks:{color:'#86efac',font:{size:11}}}
+      }
+    }
+  });
+}
+
+/* ── PENDING TABLE ── */
+function renderPendingTable(rows) {
+  allPendingRows = rows || [];
+
+  const statusCounts = {};
+  allPendingRows.forEach(r => {
+    const s = r.status || 'Unknown';
+    statusCounts[s] = (statusCounts[s]||0) + 1;
+  });
+
+  const countRow = document.getElementById('pendingCountRow');
+  countRow.innerHTML = `<div class="pcount-card"><div class="pcount-num" style="color:#f59e0b">${allPendingRows.length}</div><div class="pcount-label">Total Pending</div></div>`;
+  Object.entries(statusCounts).forEach(([s,c]) => {
+    countRow.innerHTML += `<div class="pcount-card"><div class="pcount-num" style="color:#22c55e">${c}</div><div class="pcount-label">${s}</div></div>`;
+  });
+
+  renderPendingRows(allPendingRows);
+}
+
+function renderPendingRows(rows) {
+  const body = document.getElementById('pendingTableBody');
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="icon">✅</div><p>No pending developments found</p></div></td></tr>`;
+    return;
+  }
+  body.innerHTML = rows.map((r,i) => `
+    <tr>
+      <td style="color:#6b7280;">${i+1}</td>
+      <td style="font-weight:700;color:#4ade80;">${r.pbNo||''}</td>
+      <td>${r.month||''}</td>
+      <td><span class="status-badge ${statusClass(r.status)}">${r.status||''}</span></td>
+      <td>${r.buyer||''}</td>
+      <td>${r.shape||''}</td>
+      <td>${r.mosaicFloor||''}</td>
+      <td>${r.developer||''}</td>
+      <td>${r.orderReceived||''}</td>
+    </tr>`).join('');
+}
+
+window.filterPendingTable = function() {
+  const q = document.getElementById('pendingSearch').value.toLowerCase().trim();
+  if (!q) { renderPendingRows(allPendingRows); return; }
+  const filtered = allPendingRows.filter(r =>
+    (r.pbNo||'').toLowerCase().includes(q) ||
+    (r.buyer||'').toLowerCase().includes(q) ||
+    (r.status||'').toLowerCase().includes(q) ||
+    (r.shape||'').toLowerCase().includes(q) ||
+    (r.developer||'').toLowerCase().includes(q) ||
+    (r.month||'').toLowerCase().includes(q)
+  );
+  renderPendingRows(filtered);
+};
+
+/* ── MAIN LOAD ── */
+async function loadDashboard() {
+  try {
+    const res = await fetch(API_URL);
+    if (!res.ok) throw new Error('Network error ' + res.status);
+    const data = await res.json();
+
+    renderKPIs(data);
+    renderMonthlyTable(data.monthlyBreakdown);
+    renderMonthlyChart(data.monthlyBreakdown);
+    renderBuyerChart(data.buyerBreakdown);
+    renderBuyerRate(data.buyerBreakdown);
+    renderBuyerLeaderboard(data.buyerBreakdown);
+    renderShapeChart(data.shapeBreakdown);
+    renderShapeRate(data.shapeBreakdown);
+    renderMosaicFloor(data.mosaicFloor);
+    renderOrders(data);
+    renderOperator(data.operatorPerformance);
+    renderPendingTable(data.pendingDevelopments);
+
+    document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString();
+
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    setTimeout(() => { document.getElementById('mainContent').style.opacity = '1'; }, 100);
+
+  } catch(e) {
+    console.error(e);
+    const banner = document.getElementById('errorBanner');
+    banner.style.display = 'block';
+    banner.textContent = '⚠️  Unable to load data from Google Apps Script. Error: ' + e.message + '. Please check the API URL or CORS settings.';
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('mainContent').style.opacity = '1';
+  }
 }
 
 window.onload = loadDashboard;
-
 </script>
-
 </body>
 </html>
