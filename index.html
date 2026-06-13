@@ -1451,7 +1451,7 @@ window.filterPendingTable = function() {
 /* ── MAIN LOAD ── */
 async function loadDashboard() {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(API_URL + '?t=' + new Date().getTime());
     if (!res.ok) throw new Error('Network error ' + res.status);
     const data = await res.json();
 
